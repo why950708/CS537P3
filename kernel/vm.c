@@ -250,6 +250,35 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   return newsz;
 }
 
+// Hongyi Wang
+// Allocate page tables and physical memory to grow process from oldst to
+// newst, which need not be page aligned.  Returns new size or 0 on error.
+int
+allocuvm_s(pde_t *pgdir, uint oldst, uint newst)
+{
+  char *mem;
+  uint a;
+
+  // NEED WORK
+  if(newsz > USERTOP)
+    return 0;
+  if(newst >  oldst)
+    return oldst;
+
+  a = PGROUNDDOWN(newst);
+  for(; a < oldst; a += PGSIZE){
+    mem = kalloc();
+    if(mem == 0){
+      cprintf("allocuvm out of memory\n");
+      deallocuvm(pgdir, newsz, oldsz);
+      return 0;
+    }
+    memset(mem, 0, PGSIZE);
+    mappages(pgdir, (char*)a, PGSIZE, PADDR(mem), PTE_W|PTE_U);
+  }
+  return newst;
+}
+
 // Deallocate user pages to bring the process size from oldsz to
 // newsz.  oldsz and newsz need not be page-aligned, nor does newsz
 // need to be less than oldsz.  oldsz can be larger than the actual
@@ -297,7 +326,7 @@ freevm(pde_t *pgdir)
 // Given a parent process's page table, create a copy
 // of it for a child.
 pde_t*
-copyuvm(pde_t *pgdir, uint sz)
+copyuvm(pde_t *pgdir, uint sz, uint st)
 {
   pde_t *d;
   pte_t *pte;
@@ -319,6 +348,7 @@ copyuvm(pde_t *pgdir, uint sz)
       goto bad;
   }
     
+  //Hongyi Wang
   for(i = st; i < USERTOP; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void*)i, 0)) == 0)
       panic("copyuvm: pte should exist");
