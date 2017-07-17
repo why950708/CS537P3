@@ -1,0 +1,88 @@
+exec.c:  uint argc, sz, sp, ustack[3+MAXARG+1];
+exec.c:  // Allocate a one-page stack at the next page boundary
+exec.c:  // Push argument strings, prepare rest of stack in ustack.
+exec.c:    ustack[3+argc] = sp;
+exec.c:  ustack[3+argc] = 0;
+exec.c:  ustack[0] = 0xffffffff;  // fake return PC
+exec.c:  ustack[1] = argc;
+exec.c:  ustack[2] = sp - (argc+1)*4;  // argv pointer
+exec.c:  if(copyout(pgdir, sp, ustack, (3+argc+1)*4) < 0)
+makefile.mk:# disable stack smashing check
+makefile.mk:KERNEL_CFLAGS += -fno-stack-protector
+bootother.S:# It puts the address of a newly allocated per-core stack in start-4,
+bootother.S:  # switch to the stack allocated by bootothers()
+bootasm.S:#define SEG_KDATA 2  // kernel data+stack
+bootasm.S:  # Set up the stack pointer and call into C.
+spinlock.c:// Record the current call stack in pcs[] by following the %ebp chain.
+proc.h:#define SEG_KDATA 2  // kernel data+stack
+proc.h:#define SEG_UDATA 5  // user data+stack
+proc.h:  struct taskstate ts;         // Used by x86 to find stack for interrupt
+proc.h:// Contexts are stored at the bottom of the stack they
+proc.h:// describe; the stack pointer is the address of the context.
+proc.h:// The layout of the context matches the layout of the stack in swtch.S
+proc.h:// at the "Switch stacks" comment. Switch doesn't save eip explicitly,
+proc.h:// but it is on the stack and allocproc() manipulates it.
+proc.h:  char *kstack;                // Bottom of kernel stack for this process
+proc.h://   fixed-size stack
+kalloc.c:// memory for user processes, kernel stacks, page table pages,
+spinlock.h:  uint pcs[10];      // The call stack (an array of program counters)
+swtch.S:  # Switch stacks
+main.c:void jmpkstack(void)  __attribute__((noreturn));
+main.c:// Allocate a real stack and switch to it, first
+main.c:  jmpkstack();       // call mainc() on a properly-allocated stack 
+main.c:jmpkstack(void)
+main.c:  char *kstack, *top;
+main.c:  kstack = kalloc();
+main.c:  if(kstack == 0)
+main.c:    panic("jmpkstack kalloc");
+main.c:  top = kstack + PGSIZE;
+main.c:  panic("jmpkstack");
+main.c:  char *stack;
+main.c:    // Tell bootother.S what stack to use and the address of mpmain;
+main.c:    stack = kalloc();
+main.c:    *(void**)(code-4) = stack + KSTACKSIZE;
+trapasm.S:#define SEG_KDATA 2  // kernel data+stack
+vm.c://   0..640K          : user memory (text, data, stack, heap)
+vm.c:  cpu->ts.esp0 = (uint)proc->kstack + KSTACKSIZE;
+multiboot.S:#define SEG_KDATA 2  // kernel data+stack
+multiboot.S:  # Set up the stack pointer and call into C.
+multiboot.S:  movl $(stack + STACK), %esp
+multiboot.S:.comm stack, STACK
+syscall.c:// Arguments on the stack, from the user call to the C
+proc.c:  // Allocate kernel stack if possible.
+proc.c:  if((p->kstack = kalloc()) == 0){
+proc.c:  sp = p->kstack + KSTACKSIZE;
+proc.c:// Sets up stack to return as if from system call.
+proc.c:    kfree(np->kstack);
+proc.c:    np->kstack = 0;
+proc.c:        kfree(p->kstack);
+proc.c:        p->kstack = 0;
+Binary file .vm.c.swp matches
+Binary file bootmain.o matches
+Binary file bootblock.out matches
+Binary file bio.o matches
+Binary file console.o matches
+Binary file exec.o matches
+Binary file file.o matches
+Binary file fs.o matches
+Binary file ide.o matches
+Binary file ioapic.o matches
+Binary file kalloc.o matches
+Binary file kbd.o matches
+Binary file lapic.o matches
+Binary file main.o matches
+Binary file mp.o matches
+Binary file picirq.o matches
+Binary file pipe.o matches
+Binary file proc.o matches
+Binary file spinlock.o matches
+Binary file string.o matches
+Binary file syscall.o matches
+Binary file sysfile.o matches
+Binary file sysproc.o matches
+Binary file timer.o matches
+Binary file trap.o matches
+Binary file uart.o matches
+Binary file vm.o matches
+Binary file multiboot.o matches
+Binary file kernel matches
