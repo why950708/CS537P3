@@ -99,6 +99,9 @@ struct proc*    copyproc(struct proc*);
 void            exit(void);
 int             fork(void);
 int             growproc(int);
+//Hongyi Wang
+int             growStack(int);
+
 int             kill(int);
 void            pinit(void);
 void            procdump(void);
